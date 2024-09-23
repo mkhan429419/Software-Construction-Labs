@@ -25,7 +25,5 @@ public class RulesOf6005Test {
                 RulesOf6005.mayUseCodeInAssignment(false, false, true, true, true));
         assertTrue("Expected true: citing your source when assignment allows it",
                 RulesOf6005.mayUseCodeInAssignment(false, false, false, true, false));
-        assertTrue("Expected true: citing your source when assignment allows it",
-                RulesOf6005.mayUseCodeInAssignment(false, false, false, true, false));
     }
 }
