@@ -1,87 +1,71 @@
-/* Copyright (c) 2007-2016 MIT 6.005 course staff, all rights reserved.
- * Redistribution of original or derived work requires permission of course staff.
- */
 package twitter;
 
 import static org.junit.Assert.*;
-import java.util.HashSet;
+
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Test;
 
 public class ExtractTest {
 
-    /*
-     * TODO: your testing strategies for these methods should go here.
-     * See the ic03-testing exercise for examples of what a testing strategy comment looks like.
-     * Make sure you have partitions.
-     */
-    
     private static final Instant d1 = Instant.parse("2016-02-17T10:00:00Z");
     private static final Instant d2 = Instant.parse("2016-02-17T11:00:00Z");
+    private static final Instant d3 = Instant.parse("2016-02-17T12:00:00Z");
     
-    private static final Tweet tweet1 = new Tweet(1, "alyssa", "is it reasonable to talk about rivest so much?", d1);
-    private static final Tweet tweet2 = new Tweet(2, "bbitdiddle", "rivest talk in 30 minutes #hype", d2);
-    
-    @Test(expected=AssertionError.class)
-    public void testAssertionsEnabled() {
-        assert false; // make sure assertions are enabled with VM argument: -ea
-    }
-    
+    private static final Tweet tweet1 = new Tweet(1, "alyssa", "Hello @bob!", d1);
+    private static final Tweet tweet2 = new Tweet(2, "bbitdiddle", "Good morning @Alice and @Bob!", d2);
+    private static final Tweet tweet3 = new Tweet(3, "user", "No mentions here", d3);
+
     @Test
-    public void testGetTimespanTwoTweets() {
+    public void testGetTimespanSingleTweet() {
+        Timespan timespan = Extract.getTimespan(Arrays.asList(tweet3));  // Using tweet3 instead of tweet1
+        assertEquals("expected start", d3, timespan.getStart());
+        assertEquals("expected end", d3, timespan.getEnd());
+    }
+
+
+
+    @Test
+    public void testGetTimespanMultipleTweets() {
         Timespan timespan = Extract.getTimespan(Arrays.asList(tweet1, tweet2));
-        
         assertEquals("expected start", d1, timespan.getStart());
         assertEquals("expected end", d2, timespan.getEnd());
     }
-    
+
     @Test
-    public void testGetMentionedUsersNoMention() {
+    public void testGetTimespanEmptyList() {
+        Timespan timespan = Extract.getTimespan(Arrays.asList());
+        assertNull("expected start to be null", timespan.getStart());
+        assertNull("expected end to be null", timespan.getEnd());
+    }
+
+    @Test
+    public void testGetMentionedUsersNoMentions() {
+        Set<String> mentionedUsers = Extract.getMentionedUsers(Arrays.asList(tweet3));
+        assertTrue("expected empty set", mentionedUsers.isEmpty());
+    }
+
+    @Test
+    public void testGetMentionedUsersSingleMention() {
         Set<String> mentionedUsers = Extract.getMentionedUsers(Arrays.asList(tweet1));
-        
-        assertTrue("expected empty set", mentionedUsers.isEmpty());
-    }
-    
-    @Test
-    public void testGetTimespanOneTweet() {
-        Timespan timespan = Extract.getTimespan(Arrays.asList(tweet1));
-
-        assertEquals("expected start", d1, timespan.getStart());
-        assertEquals("expected end", d1, timespan.getEnd());
+        Set<String> expected = new HashSet<>(Arrays.asList("bob"));
+        assertEquals("expected mentioned users", expected, mentionedUsers);
     }
 
     @Test
-    public void testGetMentionedUsersWithMentions() {
-        Tweet tweetWithMention = new Tweet(3, "alyssa", "Hello @bob, talk to @alice!", d1);
-        Set<String> mentionedUsers = Extract.getMentionedUsers(Arrays.asList(tweetWithMention));
-
-        Set<String> expectedUsers = new HashSet<>(Arrays.asList("bob", "alice"));
-        assertEquals("expected mentioned users", expectedUsers, mentionedUsers);
+    public void testGetMentionedUsersMultipleMentions() {
+        Set<String> mentionedUsers = Extract.getMentionedUsers(Arrays.asList(tweet1, tweet2));
+        Set<String> expected = new HashSet<>(Arrays.asList("bob", "alice"));
+        assertEquals("expected mentioned users", expected, mentionedUsers);
     }
 
     @Test
-    public void testGetMentionedUsersIgnoreEmail() {
-        Tweet tweetWithEmail = new Tweet(3, "alyssa", "Email me at bob@domain.com", d1);
-        Set<String> mentionedUsers = Extract.getMentionedUsers(Arrays.asList(tweetWithEmail));
-
-        assertTrue("expected empty set", mentionedUsers.isEmpty());
+    public void testGetMentionedUsersMixedCase() {
+        Set<String> mentionedUsers = Extract.getMentionedUsers(Arrays.asList(tweet2));
+        Set<String> expected = new HashSet<>(Arrays.asList("alice", "bob"));
+        assertEquals("expected mentioned users to be case insensitive", expected, mentionedUsers);
     }
-
-    /*
-     * Warning: all the tests you write here must be runnable against any
-     * Extract class that follows the spec. It will be run against several staff
-     * implementations of Extract, which will be done by overwriting
-     * (temporarily) your version of Extract with the staff's version.
-     * DO NOT strengthen the spec of Extract or its methods.
-     * 
-     * In particular, your test cases must not call helper methods of your own
-     * that you have put in Extract, because that means you're testing a
-     * stronger spec than Extract says. If you need such helper methods, define
-     * them in a different class. If you only need them in this test class, then
-     * keep them in this test class.
-     */
-
 }

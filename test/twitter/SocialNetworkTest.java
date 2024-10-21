@@ -1,58 +1,114 @@
-/* Copyright (c) 2007-2016 MIT 6.005 course staff, all rights reserved.
- * Redistribution of original or derived work requires permission of course staff.
- */
 package twitter;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.Instant;
+import java.util.*;
 
 import org.junit.Test;
 
 public class SocialNetworkTest {
 
-    /*
-     * TODO: your testing strategies for these methods should go here.
-     * See the ic03-testing exercise for examples of what a testing strategy comment looks like.
-     * Make sure you have partitions.
-     */
-    
-    @Test(expected=AssertionError.class)
+    @Test(expected = AssertionError.class)
     public void testAssertionsEnabled() {
         assert false; // make sure assertions are enabled with VM argument: -ea
     }
-    
+
     @Test
     public void testGuessFollowsGraphEmpty() {
         Map<String, Set<String>> followsGraph = SocialNetwork.guessFollowsGraph(new ArrayList<>());
-        
-        assertTrue("expected empty graph", followsGraph.isEmpty());
+        assertTrue("Expected empty graph", followsGraph.isEmpty());
     }
-    
+
     @Test
-    public void testInfluencersEmpty() {
+    public void testGuessFollowsGraphNoMentions() {
+        List<Tweet> tweets = Arrays.asList(
+                new Tweet(1L, "aimen", "I love programming lol", Instant.now())
+        );
+        Map<String, Set<String>> followsGraph = SocialNetwork.guessFollowsGraph(tweets);
+        assertTrue("Expected empty graph", followsGraph.isEmpty());
+    }
+
+    @Test
+    public void testGuessFollowsGraphSingleMention() {
+        List<Tweet> tweets = Arrays.asList(
+                new Tweet(1L, "aimen", "Hi @maheen!!!!!", Instant.now())
+        );
+        Map<String, Set<String>> followsGraph = SocialNetwork.guessFollowsGraph(tweets);
+
+        assertEquals("Expected 1 follower", 1, followsGraph.size());
+        assertTrue("Aimen should follow Maheen", followsGraph.get("aimen").contains("maheen"));
+    }
+
+    @Test
+    public void testGuessFollowsGraphMultipleMentions() {
+        List<Tweet> tweets = Arrays.asList(
+                new Tweet(1L, "aimen", "@maheen @hadiya did y'all see??", Instant.now())
+        );
+        Map<String, Set<String>> followsGraph = SocialNetwork.guessFollowsGraph(tweets);
+
+        assertEquals("Expected 1 follower", 1, followsGraph.size());
+        assertTrue(followsGraph.get("aimen").containsAll(Arrays.asList("maheen", "hadiya")));
+    }
+
+    @Test
+    public void testGuessFollowsGraphMultipleTweetsSameAuthor() {
+        List<Tweet> tweets = Arrays.asList(
+                new Tweet(1L, "aimen", "ICU @maheen!!!", Instant.now()),
+                new Tweet(2L, "aimen", "Daz crazy @hadiya", Instant.now())
+        );
+        Map<String, Set<String>> followsGraph = SocialNetwork.guessFollowsGraph(tweets);
+
+        assertEquals("Expected 1 follower", 1, followsGraph.size());
+        assertTrue(followsGraph.get("aimen").containsAll(Arrays.asList("maheen", "hadiya")));
+    }
+
+    @Test
+    public void testInfluencersEmptyGraph() {
         Map<String, Set<String>> followsGraph = new HashMap<>();
         List<String> influencers = SocialNetwork.influencers(followsGraph);
-        
-        assertTrue("expected empty list", influencers.isEmpty());
+        assertTrue("Expected empty list", influencers.isEmpty());
     }
 
-    /*
-     * Warning: all the tests you write here must be runnable against any
-     * SocialNetwork class that follows the spec. It will be run against several
-     * staff implementations of SocialNetwork, which will be done by overwriting
-     * (temporarily) your version of SocialNetwork with the staff's version.
-     * DO NOT strengthen the spec of SocialNetwork or its methods.
-     * 
-     * In particular, your test cases must not call helper methods of your own
-     * that you have put in SocialNetwork, because that means you're testing a
-     * stronger spec than SocialNetwork says. If you need such helper methods,
-     * define them in a different class. If you only need them in this test
-     * class, then keep them in this test class.
-     */
+    @Test
+    public void testInfluencersSingleUserNoFollowers() {
+        Map<String, Set<String>> followsGraph = new HashMap<>();
+        followsGraph.put("aimen", new HashSet<>());
 
+        List<String> influencers = SocialNetwork.influencers(followsGraph);
+        assertTrue("Expected empty list", influencers.isEmpty());
+    }
+
+    @Test
+    public void testInfluencersSingleInfluencer() {
+        Map<String, Set<String>> followsGraph = new HashMap<>();
+        followsGraph.put("aimen", new HashSet<>(Arrays.asList("maheen")));
+
+        List<String> influencers = SocialNetwork.influencers(followsGraph);
+        assertEquals("Expected one influencer", 1, influencers.size());
+        assertEquals("maheen", influencers.get(0));
+    }
+
+    @Test
+    public void testInfluencersMultipleInfluencers() {
+        Map<String, Set<String>> followsGraph = new HashMap<>();
+        followsGraph.put("aimen", new HashSet<>(Arrays.asList("maheen", "hadiya")));
+        followsGraph.put("maheen", new HashSet<>(Arrays.asList("hadiya")));
+
+        List<String> influencers = SocialNetwork.influencers(followsGraph);
+        assertEquals("Expected two influencers", 2, influencers.size());
+        assertEquals("hadiya", influencers.get(0));
+        assertEquals("maheen", influencers.get(1));
+    }
+
+    @Test
+    public void testInfluencersEqualFollowers() {
+        Map<String, Set<String>> followsGraph = new HashMap<>();
+        followsGraph.put("aimen", new HashSet<>(Arrays.asList("maheen")));
+        followsGraph.put("hadiya", new HashSet<>(Arrays.asList("maheen")));
+
+        List<String> influencers = SocialNetwork.influencers(followsGraph);
+        assertEquals("Expected one influencer", 1, influencers.size());
+        assertEquals("maheen", influencers.get(0));
+    }
 }

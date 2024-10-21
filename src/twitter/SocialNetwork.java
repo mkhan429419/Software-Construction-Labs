@@ -4,6 +4,8 @@
 package twitter;
 
 import java.util.List;
+import java.util.*;
+import java.util.regex.*;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,8 +42,25 @@ public class SocialNetwork {
      *         All the Twitter usernames in the returned social network must be
      *         either authors or @-mentions in the list of tweets.
      */
-    public static Map<String, Set<String>> guessFollowsGraph(List<Tweet> tweets) {
-        throw new RuntimeException("not implemented");
+	public static Map<String, Set<String>> guessFollowsGraph(List<Tweet> tweets) {
+        Map<String, Set<String>> followsGraph = new HashMap<>();
+        
+        Pattern mentionPattern = Pattern.compile("@(\\w+)");
+        
+        for (Tweet tweet : tweets) {
+            String author = tweet.getAuthor().toLowerCase();
+            Matcher matcher = mentionPattern.matcher(tweet.getText());
+            
+            while (matcher.find()) {
+                String mentionedUser = matcher.group(1).toLowerCase();
+                
+                if (!mentionedUser.equals(author)) {
+                    followsGraph.putIfAbsent(author, new HashSet<>());
+                    followsGraph.get(author).add(mentionedUser);
+                }
+            }
+        }
+        return followsGraph;
     }
 
     /**
@@ -53,8 +72,21 @@ public class SocialNetwork {
      * @return a list of all distinct Twitter usernames in followsGraph, in
      *         descending order of follower count.
      */
-    public static List<String> influencers(Map<String, Set<String>> followsGraph) {
-        throw new RuntimeException("not implemented");
+	public static List<String> influencers(Map<String, Set<String>> followsGraph) {
+        Map<String, Integer> followerCounts = new HashMap<>();
+
+        // Calculate follower count for each user
+        for (Set<String> followedUsers : followsGraph.values()) {
+            for (String user : followedUsers) {
+                followerCounts.put(user, followerCounts.getOrDefault(user, 0) + 1);
+            }
+        }
+
+        // Sort users by follower count in descending order
+        List<String> influencers = new ArrayList<>(followerCounts.keySet());
+        influencers.sort((a, b) -> followerCounts.get(b) - followerCounts.get(a));
+
+        return influencers;
     }
 
 }
