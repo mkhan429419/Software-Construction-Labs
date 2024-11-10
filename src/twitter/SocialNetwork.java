@@ -43,25 +43,37 @@ public class SocialNetwork {
      *         either authors or @-mentions in the list of tweets.
      */
 	public static Map<String, Set<String>> guessFollowsGraph(List<Tweet> tweets) {
-        Map<String, Set<String>> followsGraph = new HashMap<>();
-        
-        Pattern mentionPattern = Pattern.compile("@(\\w+)");
-        
-        for (Tweet tweet : tweets) {
-            String author = tweet.getAuthor().toLowerCase();
-            Matcher matcher = mentionPattern.matcher(tweet.getText());
-            
-            while (matcher.find()) {
-                String mentionedUser = matcher.group(1).toLowerCase();
-                
-                if (!mentionedUser.equals(author)) {
-                    followsGraph.putIfAbsent(author, new HashSet<>());
-                    followsGraph.get(author).add(mentionedUser);
-                }
-            }
-        }
-        return followsGraph;
-    }
+	    // Initialize the social network graph
+	    // Key: Author of the tweet (who follows)
+	    // Value: Set of mentioned users (who are followed by the author)
+	    Map<String, Set<String>> followsGraph = new HashMap<>();
+	    
+	    // Regular expression to match mentions in tweet text
+	    Pattern mentionPattern = Pattern.compile("@(\\w+)");
+
+	    // Iterate through the list of tweets to build the social network graph.
+	    for (Tweet tweet : tweets) {
+	        String author = tweet.getAuthor().toLowerCase();
+	        
+	        // Create a matcher to find all @-mentions in the tweet's text.
+	        Matcher matcher = mentionPattern.matcher(tweet.getText());
+
+	        // Find all occurrences of mentions in the tweet.
+	        while (matcher.find()) {
+	            String mentionedUser = matcher.group(1).toLowerCase();
+	            
+	            if (!mentionedUser.equals(author)) {
+	                followsGraph.putIfAbsent(author, new HashSet<>());
+
+	                followsGraph.get(author).add(mentionedUser);
+	            }
+	        }
+	    }
+
+	    // Return the constructed follows graph.
+	    return followsGraph;
+	}
+
 
     /**
      * Find the people in a social network who have the greatest influence, in
@@ -73,6 +85,9 @@ public class SocialNetwork {
      *         descending order of follower count.
      */
 	public static List<String> influencers(Map<String, Set<String>> followsGraph) {
+		// Initialize a map to store follower counts for each user
+	    // Key: Username (user being followed)
+	    // Value: Number of times the user is followed (follower count)
         Map<String, Integer> followerCounts = new HashMap<>();
 
         // Calculate follower count for each user
