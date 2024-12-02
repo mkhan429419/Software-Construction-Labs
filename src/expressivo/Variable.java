@@ -23,6 +23,10 @@ public class Variable implements Expression {
         this.name = name;
         checkRep();
     }
+    
+    public String getName() {
+        return name;
+    }
 
     private void checkRep() {
         assert name != null && !name.isEmpty();
@@ -43,5 +47,9 @@ public class Variable implements Expression {
     @Override
     public int hashCode() {
         return Objects.hash(name);
+    }
+    
+    public Expression differentiate(String variable) {
+        return variable.equals(name) ? new Number(1) : new Number(0);
     }
 }

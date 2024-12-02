@@ -22,10 +22,15 @@ public class Number implements Expression {
     public Number(double value) {
         this.value = value;
     }
+    
+    public double getValue() {
+        return value;
+    }
 
     @Override
     public String toString() {
-        return String.valueOf(value);
+        // Correctly check if the value is an integer before converting
+        return (value == Math.floor(value)) ? String.valueOf((int) value) : String.valueOf(value);
     }
 
     @Override
@@ -38,5 +43,9 @@ public class Number implements Expression {
     @Override
     public int hashCode() {
         return Objects.hash(value);
+    }
+    
+    public Expression differentiate(String variable) {
+        return new Number(0); // derivative of a constant is 0
     }
 }

@@ -20,6 +20,15 @@ public class Addition implements Expression {
         this.right = right;
         checkRep();
     }
+    
+    public Expression getLeft() {
+        return left;
+    }
+
+    // Getter for right
+    public Expression getRight() {
+        return right;
+    }
 
     private void checkRep() {
         assert left != null && right != null;
@@ -29,6 +38,7 @@ public class Addition implements Expression {
     public String toString() {
         return "(" + left.toString() + " + " + right.toString() + ")";
     }
+
 
     @Override
     public boolean equals(Object that) {
@@ -40,5 +50,9 @@ public class Addition implements Expression {
     @Override
     public int hashCode() {
         return Objects.hash(left, right);
+    }
+    
+    public Expression differentiate(String variable) {
+        return new Addition(left.differentiate(variable), right.differentiate(variable));
     }
 }

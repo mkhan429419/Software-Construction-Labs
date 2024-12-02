@@ -20,6 +20,15 @@ public class Multiplication implements Expression {
         this.right = right;
         checkRep();
     }
+    
+    public Expression getLeft() {
+        return left;
+    }
+
+    // Getter for right
+    public Expression getRight() {
+        return right;
+    }
 
     private void checkRep() {
         assert left != null && right != null;
@@ -40,5 +49,12 @@ public class Multiplication implements Expression {
     @Override
     public int hashCode() {
         return Objects.hash(left, right);
+    }
+    
+    public Expression differentiate(String variable) {
+        return new Addition(
+            new Multiplication(left.differentiate(variable), right),
+            new Multiplication(left, right.differentiate(variable))
+        );
     }
 }

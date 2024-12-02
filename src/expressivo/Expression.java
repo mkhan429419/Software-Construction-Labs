@@ -2,7 +2,7 @@
  * Redistribution of original or derived work requires permission of course staff.
  */
 package expressivo;
-
+import java.io.IOException;
 /**
  * An immutable data type representing a polynomial expression of:
  *   + and *
@@ -18,17 +18,72 @@ public interface Expression {
     
     // Datatype definition
     //   TODO
-    
-    /**
+	 /**
      * Parse an expression.
      * @param input expression to parse, as defined in the PS3 handout.
      * @return expression AST for the input
      * @throws IllegalArgumentException if the expression is invalid
      */
-    public static Expression parse(String input) {
-        throw new RuntimeException("unimplemented");
-    }
-    
+	public static Expression parse(String input) {
+	    input = input.replaceAll("\\s+", ""); // Remove whitespace for simplicity
+	    return parseExpression(new Tokenizer(input));
+	}
+
+	private static Expression parseExpression(Tokenizer tokenizer) {
+	    Expression left = parseTerm(tokenizer);
+
+	    while (tokenizer.hasNext() && tokenizer.peek().equals("+")) {
+	        tokenizer.consume("+");
+	        Expression right = parseTerm(tokenizer);
+	        left = new Addition(left, right);
+	    }
+
+	    return left;
+	}
+
+	private static Expression parseTerm(Tokenizer tokenizer) {
+	    Expression left = parseFactor(tokenizer);
+
+	    while (tokenizer.hasNext() && tokenizer.peek().equals("*")) {
+	        tokenizer.consume("*");
+	        Expression right = parseFactor(tokenizer);
+	        left = new Multiplication(left, right);
+	    }
+
+	    return left;
+	}
+
+	private static Expression parseFactor(Tokenizer tokenizer) {
+	    if (!tokenizer.hasNext()) {
+	        throw new IllegalArgumentException("Unexpected end of input");
+	    }
+
+	    String token = tokenizer.peek();
+
+	    if (token.matches("\\d+(\\.\\d+)?")) { // Matches a number
+	        tokenizer.consume();
+	        return new Number(Double.parseDouble(token));
+	    }
+
+	    if (token.matches("[a-zA-Z]+")) { // Matches a variable
+	        tokenizer.consume();
+	        return new Variable(token);
+	    }
+
+	    if (token.equals("(")) { // Matches parentheses
+	        tokenizer.consume(); // Consume '('
+	        Expression expr = parseExpression(tokenizer); // Parse the inner expression
+	        if (!tokenizer.hasNext() || !tokenizer.consume().equals(")")) {
+	            throw new IllegalArgumentException("Mismatched parentheses");
+	        }
+	        return expr;
+	    }
+
+	    throw new IllegalArgumentException("Unexpected token: " + token);
+	}
+
+
+   
     /**
      * @return a parsable representation of this expression, such that
      * for all e:Expression, e.equals(Expression.parse(e.toString())).
@@ -51,6 +106,8 @@ public interface Expression {
      */
     @Override
     public int hashCode();
+    
+    Expression differentiate(String variable);
     
     // TODO more instance methods
     

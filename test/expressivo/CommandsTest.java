@@ -20,6 +20,16 @@ public class CommandsTest {
         assert false; // make sure assertions are enabled with VM argument: -ea
     }
     
+    @Test
+    public void testDifferentiateBasic() {
+        assertEquals("1", Commands.differentiate("x", "x")); // d/dx(x) = 1
+        
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testDifferentiateInvalidExpression() {
+        Commands.differentiate("12+", "x"); // Invalid expression
+    }
     
     // TODO tests for Commands.differentiate() and Commands.simplify()
     

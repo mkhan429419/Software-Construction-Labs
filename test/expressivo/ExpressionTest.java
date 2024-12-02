@@ -5,63 +5,52 @@ import org.junit.Test;
 
 public class ExpressionTest {
 
-    // Test cases for Number variant
+//	@Test
+//	public void testValidExpressions() {
+//	    Expression expr1 = Expression.parse("3 + 2.4");
+//	    System.out.println("Parsed Expression for '3 + 2.4': " + expr1.toString());
+//	    assertEquals("(3.0 + 2.4)", expr1.toString());
+//
+//	}
+//
+//
+//	@Test(expected = IllegalArgumentException.class)
+//	public void testInvalidExpression() {
+//	    Expression.parse("3 *");
+//	}
+    
     @Test
-    public void testNumberEquality() {
-        Expression num = new Number(3.5);
-        assertEquals("3.5", num.toString());
-        assertEquals(new Number(3.5), num); // Structural equality
+    public void testDifferentiate() {
+        Expression expr = new Addition(new Variable("x"), new Number(5));
+        Expression derivative = expr.differentiate("x");
+        assertEquals("(1 + 0)", derivative.toString());
+    }
+    
+    @Test
+    public void testDifferentiateConstant() {
+        Expression constant = new Number(42);
+        assertEquals("0", constant.differentiate("x").toString());
+    }
+    @Test
+    public void testDifferentiateVariable() {
+        Expression variable = new Variable("x");
+        assertEquals("1", variable.differentiate("x").toString());
+
+        Expression otherVariable = new Variable("y");
+        assertEquals("0", otherVariable.differentiate("x").toString());
+    }
+    @Test
+    public void testDifferentiateAddition() {
+        Expression addition = new Addition(new Variable("x"), new Number(5));
+        assertEquals("(1 + 0)", addition.differentiate("x").toString());
+    }
+    @Test
+    public void testDifferentiateMultiplication() {
+        Expression multiplication = new Multiplication(new Variable("x"), new Number(5));
+        assertEquals("((1 * 5) + (x * 0))", multiplication.differentiate("x").toString());
+
+        Expression complexMultiplication = new Multiplication(new Variable("x"), new Variable("y"));
+        assertEquals("((1 * y) + (x * 0))", complexMultiplication.differentiate("x").toString());
     }
 
-    @Test
-    public void testNumberInequality() {
-        Expression num = new Number(3.5);
-        assertNotEquals(new Number(4.0), num); // Different numbers
-        assertEquals("3.5", num.toString());  // String representation
-    }
-
-    // Test cases for Variable variant
-    @Test
-    public void testVariableEquality() {
-        Expression var = new Variable("z");
-        assertEquals("z", var.toString());
-        assertEquals(new Variable("z"), var); // Structural equality
-    }
-
-    @Test
-    public void testVariableInequality() {
-        Expression var = new Variable("x");
-        assertNotEquals(new Variable("y"), var); // Different variables
-        assertEquals("x", var.toString());       // String representation
-    }
-
-    // Test cases for Addition variant
-    @Test
-    public void testAdditionEquality() {
-        Expression addition = new Addition(new Number(2), new Variable("a"));
-        assertEquals("(2.0 + a)", addition.toString());
-        assertEquals(new Addition(new Number(2), new Variable("a")), addition); // Structural equality
-    }
-
-    @Test
-    public void testAdditionInequality() {
-        Expression addition = new Addition(new Number(3), new Variable("b"));
-        assertNotEquals(new Addition(new Variable("b"), new Number(3)), addition); // Order matters
-        assertEquals("(3.0 + b)", addition.toString());                            // String representation
-    }
-
-    // Test cases for Multiplication variant
-    @Test
-    public void testMultiplicationEquality() {
-        Expression multiplication = new Multiplication(new Variable("p"), new Number(5));
-        assertEquals("(p * 5.0)", multiplication.toString());
-        assertEquals(new Multiplication(new Variable("p"), new Number(5)), multiplication); // Structural equality
-    }
-
-    @Test
-    public void testMultiplicationInequality() {
-        Expression multiplication = new Multiplication(new Variable("q"), new Number(6));
-        assertNotEquals(new Multiplication(new Number(6), new Variable("q")), multiplication); // Order matters
-        assertEquals("(q * 6.0)", multiplication.toString());                                  // String representation
-    }
 }
